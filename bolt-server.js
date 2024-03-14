@@ -79,7 +79,7 @@ async function sendMessageToAllUsers(client) {
     const users = result.members;
 
     users.forEach(async (user) => {
-      if (!user.is_bot && user.name === "csimmonswork") {
+      if (!user.is_bot) {
         await client.chat.postMessage({
           channel: user.id,
           text: "Click the button to open the standup form", // Required fallback text
@@ -99,7 +99,6 @@ async function sendMessageToAllUsers(client) {
             },
           ],
         });
-
       }
     });
   } catch (error) {
