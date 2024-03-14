@@ -1,7 +1,5 @@
-// Server to listen for people to run the /standup command (or click the button to fill out the form in their daily DM) and open a modal to collect their daily updates.
-// Runs on a dirt cheap Fly.io instance, so it's always available to the team.
-
 require("dotenv").config();
+const cron = require("node-cron");
 const { App } = require("@slack/bolt");
 
 const app = new App({
@@ -11,12 +9,10 @@ const app = new App({
   appToken: process.env.SLACK_APP_TOKEN,
 });
 
-app.command("/standup", async ({ ack, body, client }) => {
-  await ack();
-
+async function openStandupForm(trigger_id, client) {
   try {
-    const result = await client.views.open({
-      trigger_id: body.trigger_id,
+    await client.views.open({
+      trigger_id,
       view: {
         type: "modal",
         callback_id: "user_form",
@@ -75,6 +71,58 @@ app.command("/standup", async ({ ack, body, client }) => {
   } catch (error) {
     console.error("Error opening modal:", error);
   }
+}
+
+async function sendMessageToAllUsers(client) {
+  try {
+    const result = await client.users.list();
+    const users = result.members;
+
+    users.forEach(async (user) => {
+      if (!user.is_bot && user.name === "csimmonswork") {
+        await client.chat.postMessage({
+          channel: user.id,
+          text: "Click the button to open the standup form", // Required fallback text
+          blocks: [
+            {
+              type: "actions",
+              elements: [
+                {
+                  type: "button",
+                  text: {
+                    type: "plain_text",
+                    text: "Friendly standup reminder",
+                  },
+                  action_id: "open_standup_form",
+                },
+              ],
+            },
+          ],
+        });
+
+      }
+    });
+  } catch (error) {
+    console.error("Error sending messages:", error);
+  }
+}
+
+// Schedule the task to run M-F at 9 AM
+cron.schedule("0 9 * * 1-5", () => {
+  console.log("Sending standup reminder messages to all users at 9 AM M-F");
+  sendMessageToAllUsers(app.client);
+});
+
+// Enable Slash-command
+app.command("/standup", async ({ ack, body, client }) => {
+  await ack();
+  await openStandupForm(body.trigger_id, client);
+});
+
+// Handling button click to open the standup form
+app.action("open_standup_form", async ({ ack, body, client }) => {
+  await ack();
+  await openStandupForm(body.trigger_id, client);
 });
 
 app.view("user_form", async ({ ack, body, view, client }) => {
@@ -121,7 +169,6 @@ app.view("user_form", async ({ ack, body, view, client }) => {
       Math.floor(Math.random() * reportingMessages.length)
     ].replace("{userName}", userName);
 
-
     await client.chat.postMessage({
       channel: "#standup",
       blocks: [
@@ -160,7 +207,7 @@ app.view("user_form", async ({ ack, body, view, client }) => {
 
 (async () => {
   // Only need to do this once, then we can comment this out.
-  // const channelId = "C06PAP95WRK"; // Use the channel's ID, not its name (#standup)
+  // const channelId = "C06PAP95WRK"; // Use the channel's ID you can copy from channel details, not its name (#standup)
 
   // try {
   //   // Attempt to join the channel (optional step, depending on your needs)
@@ -181,7 +228,6 @@ app.view("user_form", async ({ ack, body, view, client }) => {
   //   console.error("Failed to add the bot to the channel:", error);
   // }
 
-  // Start your app
   const PORT = process.env.PORT || 3000;
   await app.start(PORT);
 
