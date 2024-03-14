@@ -1,0 +1,9 @@
+{
+  "name": "simple-slack-standup",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@slack/web-api": "^7.0.2",
+    "dotenv": "^16.4.5"
+  }
+}
