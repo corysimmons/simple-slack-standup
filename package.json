@@ -2,8 +2,16 @@
   "name": "simple-slack-standup",
   "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "start": "node bolt-server.js",
+    "dev": "nodemon bolt-server.js"
+  },
   "dependencies": {
+    "@slack/bolt": "^3.17.1",
     "@slack/web-api": "^7.0.2",
     "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }
