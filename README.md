@@ -10,8 +10,4 @@ The simplest possible async standup tool. It's a Slack bot that asks your team m
 
 ## Deploying
 
-This is hosted on Fly.io so you'll need to install the flyctl CLI tool. Sign into our Fly.io account and then run the following command to deploy:
-
-```sh
-flyctl deploy
-```
+Pushes to this repo auto-redeploy to Fly.io.
