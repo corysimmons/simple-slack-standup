@@ -106,8 +106,8 @@ async function sendMessageToAllUsers(client) {
   }
 }
 
-// Schedule the task to run M-F at 9 AM Eastern Time
-cron.schedule("0 14 * * 1-5", () => {
+// Schedule the task to run M-F at 9 AM Eastern Time (will probably need to change this for Daylight Savings)
+cron.schedule("0 13 * * 1-5", () => {
   console.log("Sending standup reminder messages to all users at 9 AM M-F");
   sendMessageToAllUsers(app.client);
 });
